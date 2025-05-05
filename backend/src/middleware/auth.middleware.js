@@ -45,3 +45,23 @@ export const authMiddleware = async (req, res, next) => {
     return next(new AppError("Unauthorized- middleware", 500));
   }
 };
+
+export const checkAdmin = async (req, res, next) => {
+  const userId = req.user.id;
+
+  try {
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!user || !(user.role === "ADMIN")) {
+      return next(new AppError("Access denied - Admin only", 403));
+    }
+
+    next();
+  } catch (error) {
+    console.log("Error checking role admin", error);
+    next(new AppError("Error checking admin role", 500));
+  }
+};
